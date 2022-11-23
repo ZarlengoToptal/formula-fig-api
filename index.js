@@ -5,6 +5,8 @@ console.log({
 });
 const express = require("express");
 const app = express();
+var cors = require("cors");
+app.use(cors());
 // const db = require("cyclic-dynamodb");
 const { validJWTNeeded } = require("./middleware/authentication");
 
