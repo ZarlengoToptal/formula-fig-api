@@ -1,4 +1,8 @@
 require("dotenv").config();
+console.log({
+  CYCLIC_DB: process.env.CYCLIC_DB,
+  BUCKET: process.env.BUCKET,
+});
 const express = require("express");
 const app = express();
 // const db = require("cyclic-dynamodb");
