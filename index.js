@@ -13,6 +13,11 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions)); // Use this after the variable declaration
+// CORS (Cross-Origin Resource Sharing) headers to support Cross-site HTTP requests
+app.all("*", (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  next();
+});
 // const db = require("cyclic-dynamodb");
 const { validJWTNeeded } = require("./middleware/authentication");
 
