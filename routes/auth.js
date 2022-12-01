@@ -72,13 +72,13 @@ router.delete("/delete/:key", async (req, res) => {
 });
 
 router.post("/logout", validJWTNeeded, async (req, res) => {
-  const { token } = req;
-  const { results } = await db.collection("user").filter({ token });
-  if (results.length === 0) {
+  const { key } = req;
+  const user = await db.collection("user").get(key);
+  if (!user) {
     res.status(201).end();
     return;
   }
-  const { key, props } = results[0];
+  const { props } = user;
   try {
     delete props.token;
     delete props.refresh_token;
