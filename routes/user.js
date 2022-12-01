@@ -61,4 +61,15 @@ router.get("/account", async (req, res) => {
   res.json(response).end();
 });
 
+// Get all client info
+router.get("/all", async (req, res) => {
+  const { results } = await db.collection("user");
+  if (results.length === 0) {
+    res.status(201).end();
+    return;
+  }
+  console.log(JSON.stringify(results, null, 2));
+  res.json(results).end();
+});
+
 module.exports = router;
