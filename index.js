@@ -44,6 +44,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/auth", require("./routes/auth"));
 app.use("/user", validJWTNeeded, require("./routes/user"));
+app.use("/admin", require("./routes/admin"));
 
 /*
 // Create or Update an item
