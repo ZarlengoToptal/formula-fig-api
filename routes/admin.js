@@ -4,8 +4,10 @@ const db = require("cyclic-dynamodb");
 
 // Get all client info
 router.get("/all", async (req, res) => {
-  const { results } = await db.collection("user");
-  if (results.length === 0) {
+  const users = await db.collection("user");
+  const { results } = users;
+  console.log({ users });
+  if (results?.length === 0) {
     res.status(201).end();
     return;
   }
