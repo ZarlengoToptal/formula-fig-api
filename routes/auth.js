@@ -2,89 +2,38 @@ const express = require("express");
 const router = express.Router();
 
 const db = require("cyclic-dynamodb");
-const Multipassify = require("multipassify");
 const { v4: uuidv4 } = require("uuid");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
-const axios = require("axios").create({
-  baseUrl: "https://jsonplaceholder.typicode.com/",
-});
+const {
+  userCheck,
+  createToken,
+  getClientIpAddr,
+  checkPassword,
+} = require("../utils/common");
+const { verifyApiData, createApiObject } = require("../utils/api");
+const { verifyMBOClientData, createMBOClientObject } = require("../utils/mbo");
+const {
+  verifyShopifyClientData,
+  createMultipassToken,
+} = require("../utils/shopify");
 
 const { validJWTNeeded } = require("../middleware/authentication");
 
 const jwtSecret = "mysecret";
 
-// Construct the Multipassify encoder
-const multipassify = new Multipassify(process.env.MULTIPASS_SECRET);
-const shopifyStoreURL = `${process.env.SHOPIFY_STORE_NAME}.myshopify.com`;
-
-const createMultipassToken = async ({ email, first_name, last_name }) => {
-  // Create your customer data hash
-  const customerData = {
-    email,
-    first_name,
-    last_name,
-    // remote_ip: "76.22.68.10", //ip,
-    created_at: new Date().toISOString(),
-  };
-  // Generate a Shopify multipass URL to your shop
-  return multipassify.generateUrl(customerData, shopifyStoreURL);
-};
-
-const getClientIpAddr = ({ headers, socket }) => {
-  const isIPValid = (ipToCheck) => {
-    return (
-      ipToCheck == null ||
-      ipToCheck.length() === 0 ||
-      ipToCheck.equalsIgnoreCase("unknown")
-    );
-  };
-
-  let ip = headers["X-Forwarded-For"];
-  if (isIPValid(ip)) {
-    ip = headers["Proxy-Client-IP"];
-  }
-  if (isIPValid(ip)) {
-    ip = headers["WL-Proxy-Client-IP"];
-  }
-  if (isIPValid(ip)) {
-    ip = headers["HTTP_X_FORWARDED_FOR"];
-  }
-  if (isIPValid(ip)) {
-    ip = headers["HTTP_X_FORWARDED"];
-  }
-  if (isIPValid(ip)) {
-    ip = headers["HTTP_X_CLUSTER_CLIENT_IP"];
-  }
-  if (isIPValid(ip)) {
-    ip = headers["HTTP_CLIENT_IP"];
-  }
-  if (isIPValid(ip)) {
-    ip = headers["HTTP_FORWARDED_FOR"];
-  }
-  if (isIPValid(ip)) {
-    ip = headers["HTTP_FORWARDED"];
-  }
-  if (isIPValid(ip)) {
-    ip = headers["HTTP_VIA"];
-  }
-  if (isIPValid(ip)) {
-    ip = headers["REMOTE_ADDR"];
-  }
-  if (isIPValid(ip)) {
-    ip = socket.remoteAddress;
-  }
-  return ip;
-};
-
 router.post("/register", async (req, res) => {
-  const { email, password, firstname, lastname, AddressLine1 } = req.body;
-  const { results } = await db.collection("user").filter({ email });
-  if (results.length !== 0) {
-    res.status(400).json({ error: "Email already exists" });
-    return;
+  // Verify the input data has all the required fields
+  if (
+    !verifyMBOClientData(req.body) ||
+    !verifyShopifyClientData(req.body) ||
+    !verifyApiData(req.body)
+  ) {
+    return res.status(400).send("Invalid data");
   }
+  // Check if in SSO system
+  if (await userCheck(req.body.email, res)) return;
   const key = uuidv4(); // ⇨ '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed'
   const mboId = await createMBOClientObject(req.body);
   if (!mboId) {
@@ -93,25 +42,11 @@ router.post("/register", async (req, res) => {
   }
   req.body["MBO_-99"] = mboId;
   try {
-    let refreshId = email + jwtSecret;
-    let salt = crypto.randomBytes(16).toString("base64");
-    let hash = crypto
-      .createHmac("sha512", salt)
-      .update(refreshId)
-      .digest("base64");
-    req.body.refreshKey = salt;
-    let token = jwt.sign(req.body, jwtSecret);
-    req.body.token = token;
-    let b = Buffer.from(hash);
-    let refresh_token = b.toString("base64");
-    req.body.refresh_token = refresh_token;
-    await db.collection("user").set(key, req.body);
-    const url = await createMultipassToken({
-      email,
-      ip: getClientIpAddr(req),
-      first_name: firstname,
-      last_name: lastname,
-    });
+    const { token, refresh_token } = createToken(key);
+    await db
+      .collection("user")
+      .set(key, await createApiObject(req.body, token, refresh_token));
+    const url = await createMultipassToken(req.body);
     res
       .status(201)
       .send({ accessToken: token, refreshToken: refresh_token, url });
@@ -167,32 +102,20 @@ router.post("/login", async (req, res) => {
     return;
   }
   const { key, props } = results[0];
-  if (!key || !props || password !== props.password) {
+  if (!key || !props) {
     res.status(403).end();
     return;
   }
-
+  if (await checkPassword(key, password, res)) return;
   try {
-    let refreshId = email + jwtSecret;
-    let salt = crypto.randomBytes(16).toString("base64");
-    let hash = crypto
-      .createHmac("sha512", salt)
-      .update(refreshId)
-      .digest("base64");
-    req.body.refreshKey = salt;
-    let token = jwt.sign(req.body, jwtSecret);
+    const { token, refresh_token } = createToken(key);
     props.token = token;
-    let b = Buffer.from(hash);
-    let refresh_token = b.toString("base64");
     props.refresh_token = refresh_token;
     delete props.created;
     delete props.updated;
     await db.collection("user").delete(key);
     await db.collection("user").set(key, props);
-    const url = await createMultipassToken({
-      email,
-      ip: getClientIpAddr(req),
-    });
+    const url = await createMultipassToken(req.body);
     res
       .status(201)
       .send({ accessToken: token, refreshToken: refresh_token, url });
@@ -211,38 +134,5 @@ router.get("/shopify-login/:email", async (req, res) => {
   res.json(url).end();
   // res.redirect(url);
 });
-
-const createMBOClientData = (client) => {
-  return {
-    FirstName: client.firstname || "FirstName",
-    LastName: client.lastname || "LastName",
-    Email: client.email || "",
-    BirthDate: client.BirthDate || "1/1/2000",
-    AddressLine1: client.AddressLine1 || "1 Address",
-    City: client.City || "City",
-    State: client.State || "ST",
-    PostalCode: client.PostalCode || "12345",
-    MobilePhone: client.MobilePhone || "1-234-567-8901",
-    ReferredBy: client.ReferredBy || "ReferredBy",
-  };
-};
-
-const createMBOClientObject = async (data) => {
-  try {
-    const response = await axios({
-      url: "https://api.mindbodyonline.com/public/v6/client/addclient",
-      method: "post",
-      headers: {
-        "Api-Key": "aef3102e08bf4652ab8fbfd0b090d3fc",
-        SiteId: "-99",
-      },
-      data: createMBOClientData(data),
-    });
-    return response.data.Client.Id;
-  } catch (err) {
-    console.log(err);
-    return false;
-  }
-};
 
 module.exports = router;

@@ -4,7 +4,7 @@ const db = require("cyclic-dynamodb");
 const axios = require("axios").create({
   baseUrl: "https://jsonplaceholder.typicode.com/",
 });
-
+const { getMBOClientData } = require("../utils/mbo");
 const getMBOClientObject = async (mboId) => {
   try {
     const response = await axios({
@@ -22,39 +22,14 @@ const getMBOClientObject = async (mboId) => {
   }
 };
 
-const getMBOClientData = (client) => {
-  return {
-    FirstName: client.FirstName || "",
-    LastName: client.LastName || "",
-    Email: client.Email || "",
-    Phone: client.HomePhone || "",
-    BirthDate: client.BirthDate || "",
-    AddressLine1: client.AddressLine1 || "",
-    AddressLine2: client.AddressLine2 || "",
-    City: client.City || "",
-    State: client.State || "",
-    PostalCode: client.PostalCode || "",
-    Country: client.Country || "",
-    MobilePhone: client.MobilePhone || "",
-    SendAccountEmails: client.SendAccountEmails || "",
-    SendAccountTexts: client.SendAccountTexts || "",
-    SendPromotionalEmails: client.SendPromotionalEmails || "",
-    SendPromotionalTexts: client.SendPromotionalTexts || "",
-    SendScheduleEmails: client.SendScheduleEmails || "",
-    SendScheduleTexts: client.SendScheduleTexts || "",
-  };
-};
-
 // Get a client info
 router.get("/account", async (req, res) => {
-  const { token } = req;
-  const { results } = await db.collection("user").filter({ token });
+  const { results } = await db.collection("user").filter(req.key);
   if (results.length === 0) {
     res.status(201).end();
     return;
   }
   const { props } = results[0];
-  console.log({ props });
   const mboClientId = props["MBO_-99"];
   const response = await getMBOClientObject(mboClientId);
   console.log(JSON.stringify(response, null, 2));

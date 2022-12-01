@@ -1,8 +1,5 @@
 require("dotenv").config();
-console.log({
-  CYCLIC_DB: process.env.CYCLIC_DB,
-  BUCKET: process.env.BUCKET,
-});
+const { checkPassword } = require("./utils/common");
 const express = require("express");
 const app = express();
 var cors = require("cors");
@@ -43,8 +40,14 @@ app.use(express.urlencoded({ extended: true }));
 // #############################################################################
 
 app.use("/auth", require("./routes/auth"));
-app.use("/user", validJWTNeeded, require("./routes/user"));
 app.use("/admin", require("./routes/admin"));
+app.use("/user", validJWTNeeded, require("./routes/user"));
+app.use("/test", validJWTNeeded, async (req, res) => {
+  console.log({ key: req.key });
+  createToken(req.key);
+  if (checkPassword(req.key, "password", res)) return;
+  res.json("SUCCESS").end();
+});
 
 /*
 // Create or Update an item
