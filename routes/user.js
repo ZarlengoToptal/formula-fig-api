@@ -11,6 +11,9 @@ const {
   removeClientFromClass,
   addClientToClass,
   getClassReschedule,
+  deleteCC,
+  getCC,
+  updateCC,
 } = require("../utils/mbo");
 
 // Get a client info
@@ -87,6 +90,51 @@ router.get("/all", async (req, res) => {
 router.get("/reschedule/:classId", async (req, res) => {
   const { classId } = req.params;
   const response = await getClassReschedule(classId);
+  console.log(JSON.stringify(response, null, 2));
+  res.json(response).end();
+});
+
+router.get("/creditCard", async (req, res) => {
+  console.log("GET CC", req.key);
+  const { results } = await db.collection("user").filter(req.key);
+  if (results.length === 0) {
+    res.status(201).end();
+    return;
+  }
+  const { props } = results[0];
+  const mboClientId = props["MBO_-99"];
+  console.log("GET CC", { mboClientId });
+  const response = await getCC(mboClientId);
+  console.log(JSON.stringify(response, null, 2));
+  res.json(response).end();
+});
+
+router.delete("/creditCard", async (req, res) => {
+  console.log("DELETE CC", req.key);
+  const { results } = await db.collection("user").filter(req.key);
+  if (results.length === 0) {
+    res.status(201).end();
+    return;
+  }
+  const { props } = results[0];
+  const mboClientId = props["MBO_-99"];
+  console.log("DELETE CC", { mboClientId });
+  const response = await deleteCC(mboClientId);
+  console.log(JSON.stringify(response, null, 2));
+  res.json(response).end();
+});
+
+router.post("/creditCard", async (req, res) => {
+  console.log("UPDATE CC", req.key);
+  const { results } = await db.collection("user").filter(req.key);
+  if (results.length === 0) {
+    res.status(201).end();
+    return;
+  }
+  const { props } = results[0];
+  const mboClientId = props["MBO_-99"];
+  console.log("UPDATE CC", { mboClientId }, req.body);
+  const response = await updateCC(mboClientId, req.body);
   console.log(JSON.stringify(response, null, 2));
   res.json(response).end();
 });

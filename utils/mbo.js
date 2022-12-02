@@ -39,6 +39,21 @@ const getMBOVisitsData = async (visits) => {
   };
 };
 
+const getMBOCCData = ({ ClientCreditCard }) => {
+  console.log("getMBOCCData");
+  console.log({ ClientCreditCard });
+  return {
+    Address: ClientCreditCard?.Address || "",
+    CardHolder: ClientCreditCard?.CardHolder || "",
+    City: ClientCreditCard?.City || "",
+    ExpMonth: ClientCreditCard?.ExpMonth || "",
+    ExpYear: ClientCreditCard?.ExpYear || "",
+    LastFour: ClientCreditCard?.LastFour || "",
+    PostalCode: ClientCreditCard?.PostalCode || "",
+    State: ClientCreditCard?.State || "",
+  };
+};
+
 const getMBOClientData = (client, memberships) => {
   console.log("getMBOClientData");
   console.log({ memberships });
@@ -327,6 +342,94 @@ const getMBOClientObject = async (mboId) => {
   }
 };
 
+const getCC = async (mboId) => {
+  const accessToken = await checkAccessToken();
+  if (!accessToken) return null;
+  console.log("getMBOClientObject", mboId, accessToken);
+  const options = {
+    url: `https://api.mindbodyonline.com/public/v6/client/clientcompleteinfo?ClientId=${mboId}`,
+    method: "get",
+    headers: {
+      "Api-Key": "aef3102e08bf4652ab8fbfd0b090d3fc",
+      SiteId: "-99",
+      authorization: accessToken,
+    },
+  };
+  try {
+    const { data } = await axios(options);
+    return getMBOCCData(data.Client, data.ClientMemberships);
+  } catch (err) {
+    // console.log(err);
+    return false;
+  }
+};
+
+const updateCC = async (mboId, ccData) => {
+  const accessToken = await checkAccessToken();
+  if (!accessToken) return null;
+  console.log("UPDATE", {
+    Client: {
+      Id: mboId,
+      ClientCreditCard: ccData,
+    },
+    CrossRegionalUpdate: false,
+  });
+  try {
+    await axios({
+      url: "https://api.mindbodyonline.com/public/v6/client/updateclient",
+      method: "post",
+      headers: {
+        "Api-Key": "aef3102e08bf4652ab8fbfd0b090d3fc",
+        SiteId: "-99",
+        authorization: accessToken,
+      },
+      data: {
+        Client: {
+          Id: mboId,
+          ClientCreditCard: ccData,
+        },
+        CrossRegionalUpdate: false,
+      },
+    });
+    return true;
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+};
+
+const deleteCC = async (mboId) => {
+  const accessToken = await checkAccessToken();
+  if (!accessToken) return null;
+  try {
+    await axios({
+      url: "https://api.mindbodyonline.com/public/v6/client/updateclient",
+      method: "post",
+      headers: {
+        "Api-Key": "aef3102e08bf4652ab8fbfd0b090d3fc",
+        SiteId: "-99",
+        authorization: accessToken,
+      },
+      data: {
+        Client: {
+          Id: mboId,
+          ClientCreditCard: {
+            CardNumber: "",
+            ExpMonth: "",
+            ExpYear: "",
+            CardHolder: "",
+          },
+        },
+        CrossRegionalUpdate: false,
+      },
+    });
+    return true;
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
+};
+
 module.exports = {
   createMBOClientObject,
   verifyMBOClientData,
@@ -337,4 +440,7 @@ module.exports = {
   addClientToClass,
   getClassReschedule,
   getMBOClientObject,
+  deleteCC,
+  getCC,
+  updateCC,
 };
