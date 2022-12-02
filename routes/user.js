@@ -4,26 +4,32 @@ const db = require("cyclic-dynamodb");
 const axios = require("axios").create({
   baseUrl: "https://jsonplaceholder.typicode.com/",
 });
-const { getMBOClientData } = require("../utils/mbo");
-const getMBOClientObject = async (mboId) => {
-  try {
-    const response = await axios({
-      url: `https://api.mindbodyonline.com/public/v6/client/clients?ClientIds=${mboId}`,
-      method: "get",
-      headers: {
-        "Api-Key": "aef3102e08bf4652ab8fbfd0b090d3fc",
-        SiteId: "-99",
-      },
-    });
-    return getMBOClientData(response.data.Clients[0]);
-  } catch (err) {
-    console.log(err);
-    return false;
-  }
-};
+const {
+  getMBOClientData,
+  getMBOClientObject,
+  getMBOClientVisits,
+  removeClientFromClass,
+  addClientToClass,
+  getClassReschedule,
+} = require("../utils/mbo");
 
 // Get a client info
 router.get("/account", async (req, res) => {
+  const { results } = await db.collection("user").filter(req.key);
+  if (results.length === 0) {
+    console.log("??", { results });
+    res.status(201).end();
+    return;
+  }
+  const { props } = results[0];
+  const mboClientId = props["MBO_-99"];
+  console.log({ mboClientId });
+  const response = await getMBOClientObject(mboClientId);
+  console.log("resp", JSON.stringify(response, null, 2));
+  res.json(response).end();
+});
+// Get a client visits
+router.get("/visits", async (req, res) => {
   const { results } = await db.collection("user").filter(req.key);
   if (results.length === 0) {
     res.status(201).end();
@@ -31,7 +37,37 @@ router.get("/account", async (req, res) => {
   }
   const { props } = results[0];
   const mboClientId = props["MBO_-99"];
-  const response = await getMBOClientObject(mboClientId);
+  const response = await getMBOClientVisits(mboClientId);
+  // console.log(JSON.stringify(response, null, 2));
+  res.json(response).end();
+});
+
+// Remove a client from a class
+router.delete("/visit/:classId", async (req, res) => {
+  const { results } = await db.collection("user").filter(req.key);
+  const { classId } = req.params;
+  if (results.length === 0) {
+    res.status(201).end();
+    return;
+  }
+  const { props } = results[0];
+  const mboClientId = props["MBO_-99"];
+  const response = await removeClientFromClass(mboClientId, classId);
+  console.log(JSON.stringify(response, null, 2));
+  res.json(response).end();
+});
+
+// Remove a client from a class
+router.post("/visit/:classId", async (req, res) => {
+  const { results } = await db.collection("user").filter(req.key);
+  const { classId } = req.params;
+  if (results.length === 0) {
+    res.status(201).end();
+    return;
+  }
+  const { props } = results[0];
+  const mboClientId = props["MBO_-99"];
+  const response = await addClientToClass(mboClientId, classId);
   console.log(JSON.stringify(response, null, 2));
   res.json(response).end();
 });
@@ -45,6 +81,14 @@ router.get("/all", async (req, res) => {
   }
   console.log(JSON.stringify(results, null, 2));
   res.json(results).end();
+});
+
+// Get all client info
+router.get("/reschedule/:classId", async (req, res) => {
+  const { classId } = req.params;
+  const response = await getClassReschedule(classId);
+  console.log(JSON.stringify(response, null, 2));
+  res.json(response).end();
 });
 
 module.exports = router;
