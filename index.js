@@ -4,22 +4,38 @@ import cors from "cors";
 import routes from "./routes/index.js";
 config();
 const app = express();
+var allowlist = [
+  "http://127.0.0.1:5500",
+  "https://teal-smiling-tick.cyclic.app",
+];
 const corsOptions = {
   origin: "*",
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
+var corsOptionsDelegate = function (req, callback) {
+  if (allowlist.indexOf(req.header("Origin")) !== -1) {
+    corsOptions.origin = true; // reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions.origin = false; // disable CORS for this request
+  }
+  callback(null, corsOptions); // callback expects two parameters: error and options
+};
+
 process.env.debug = true;
-app.use(cors(corsOptions)); // Use this after the variable declaration
+app.use(cors(corsOptionsDelegate)); // Use this after the variable declaration
 // CORS (Cross-Origin Resource Sharing) headers to support Cross-site HTTP requests
-app.all("*", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
+// app.all("*", (req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", [
+//     "http://127.0.0.1:5500",
+//     "https://teal-smiling-tick.cyclic.app",
+//   ]);
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept"
+//   );
+//   next();
+// });
 // const db = require("cyclic-dynamodb");
 
 app.use(json());
