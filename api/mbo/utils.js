@@ -56,8 +56,8 @@ const URL_LIST = {
 export const mboAxios = async (URL_TOKEN, data = null) => {
   const URL = URL_LIST[URL_TOKEN];
   const headers = {
-    "Api-Key": "aef3102e08bf4652ab8fbfd0b090d3fc",
-    SiteId: "-99",
+    "Api-Key": process.env.MBO_API_KEY,
+    SiteId: process.env.MBO_SITE_ID,
   };
   if (URL.AUTH) {
     const accessToken = await _checkAccessToken();
@@ -91,8 +91,8 @@ const _checkAccessToken = async () => {
   console.log("getAccessToken");
   try {
     const { AccessToken } = await mboAxios("GET_USER_TOKEN", {
-      Username: "Siteowner",
-      Password: "apitest1234",
+      Username: process.env.MBO_API_USERNAME,
+      Password: process.env.MBO_API_PASSWORD,
     });
     process.env.MBO_USER_TOKEN = AccessToken;
     return AccessToken;
