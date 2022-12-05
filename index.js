@@ -7,6 +7,7 @@ const app = express();
 var allowlist = [
   "http://127.0.0.1:5500",
   "https://teal-smiling-tick.cyclic.app",
+  "https://formula-fig-staging.myshopify.com",
 ];
 const corsOptions = {
   origin: "*",
