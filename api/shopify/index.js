@@ -26,6 +26,7 @@ const _createShopifyCustomerData = (customer) => {
 };
 
 export const _getShopifyOrderData = async (orders) => {
+  if (!orders || !orders.length) return [];
   const productIds = {};
   orders.map((order) =>
     order.line_items.map((item) => (productIds[item.product_id] = true))
