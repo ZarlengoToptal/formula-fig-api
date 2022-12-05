@@ -58,6 +58,7 @@ export const mboAxios = async (URL_TOKEN, data = null) => {
   const headers = {
     "Api-Key": process.env.MBO_API_KEY,
     SiteId: process.env.MBO_SITE_ID,
+    "Accept-Encoding": "application/json",
   };
   if (URL.AUTH) {
     const accessToken = await _checkAccessToken();
