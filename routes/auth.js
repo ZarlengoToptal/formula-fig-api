@@ -19,6 +19,7 @@ const { verifyMBOClientData, addClient, findByEmail } = MBO.Client;
 const { addCustomer, getCustomerByEmail, verifyShopifyCustomerData } = SHOPIFY;
 
 router.post("/register", async (req, res) => {
+  if (process.env.debug) console.log("POST:/auth/register");
   // Verify the input data has all the required fields
   if (
     !verifyMBOClientData(req.body) ||
@@ -75,6 +76,7 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/logout", validJWTNeeded, async (req, res) => {
+  if (process.env.debug) console.log("POST:/auth/logout");
   const { key } = req;
   const user = await db.collection("user").get(key);
   if (!user) {
@@ -98,6 +100,7 @@ router.post("/logout", validJWTNeeded, async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
+  if (process.env.debug) console.log("POST:/auth/login");
   const { email, password } = req.body;
   const { results } = await db.collection("user").filter({ email });
   if (results.length === 0) {
@@ -119,6 +122,7 @@ router.post("/login", async (req, res) => {
     await db.collection("user").delete(key);
     await db.collection("user").set(key, props);
     const url = await createMultipassToken(req.body);
+    if (process.env.debug) console.log(JSON.stringify(url, null, 2));
     res
       .status(201)
       .send({ accessToken: token, refreshToken: refresh_token, url });
@@ -134,6 +138,7 @@ router.get("/shopify-login/:email", async (req, res) => {
     email: req.params.email,
     ip: getClientIpAddr(req),
   });
+  if (process.env.debug) console.log(JSON.stringify(url, null, 2));
   res.json(url).end();
   // res.redirect(url);
 });

@@ -76,6 +76,7 @@ export const mboAxios = async (URL_TOKEN, data = null) => {
     headers,
     data,
   };
+  if (process.env.debug) console.log({ options });
   return axios(options)
     .then((response) => response.data)
     .catch((error) => {
@@ -88,7 +89,7 @@ const _checkAccessToken = async () => {
   if (process.env.MBO_USER_TOKEN) {
     return process.env.MBO_USER_TOKEN;
   }
-  console.log("getAccessToken");
+  if (process.env.debug) console.log("getAccessToken");
   try {
     const { AccessToken } = await mboAxios("GET_USER_TOKEN", {
       Username: process.env.MBO_API_USERNAME,

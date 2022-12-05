@@ -117,28 +117,35 @@ const verifyShopifyCustomerData = (customer) => {
   return true;
 };
 const getAllCustomers = async () => {
+  if (process.env.debug) console.log("getAllCustomers");
   const { customers } = await shopifyAxios("GET_USERS");
+  if (process.env.debug) console.log({ customers });
   return customers;
 };
 
 const getCustomerByEmail = async (email) => {
+  if (process.env.debug) console.log("getCustomerByEmail", email);
   const { customers } = await shopifyAxios("GET_USERS_BY_QUERY", {
     query: `email:${email}`,
   });
+  if (process.env.debug) console.log({ customers });
   return customers;
 };
 
 const addCustomer = async (customer) => {
+  if (process.env.debug) console.log("addCustomer", customer);
   const { customer: newCustomer } = await shopifyAxios(
     "POST_ADD_CUSTOMER",
     _createShopifyCustomerData(customer)
   );
+  if (process.env.debug) console.log({ newCustomer });
   return newCustomer.id;
 };
 
 const getShopifyCustomerObject = async (shopifyId) => {
-  console.log("getShopifyCustomerObject", shopifyId);
+  if (process.env.debug) console.log("getShopifyCustomerObject", shopifyId);
   const { orders } = await shopifyAxios("GET_CUSTOMER_ORDERS", shopifyId);
+  if (process.env.debug) console.log({ orders });
   return await _getShopifyOrderData(orders);
 };
 

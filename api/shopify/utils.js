@@ -46,7 +46,7 @@ export const shopifyAxios = async (URL_TOKEN, data = null) => {
     headers,
     data,
   };
-  // console.log({ options });
+  if (process.env.debug) console.log({ options });
   return axios(options)
     .then((response) => response.data)
     .catch((error) => {

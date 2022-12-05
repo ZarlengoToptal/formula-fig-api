@@ -2,6 +2,7 @@ import { mboAxios } from "../utils.js";
 import Site from "../Site/index.js";
 
 const _getMBOVisitsData = async (visits) => {
+  if (process.env.debug) console.log("_getMBOVisitsData", visits);
   const locations = await Site.getLocations();
   const allVisits = visits.map((visit) => {
     return {
@@ -13,6 +14,7 @@ const _getMBOVisitsData = async (visits) => {
       Name: visit.Name,
     };
   });
+  if (process.env.debug) console.log({ allVisits });
   return {
     Appointments: allVisits.filter(
       (visit) => new Date(visit.StartDate) >= new Date()
@@ -25,6 +27,7 @@ const _getMBOVisitsData = async (visits) => {
 
 export default {
   get: async (clientId) => {
+    if (process.env.debug) console.log("get", clientId);
     const oneYear = 365 * 24 * 60 * 60 * 1000;
     const startDate = new Date(new Date().getTime() - oneYear).toISOString();
     const endDate = new Date(new Date().getTime() + oneYear).toISOString();
@@ -33,6 +36,7 @@ export default {
       StartDate: startDate,
       EndDate: endDate,
     });
+    if (process.env.debug) console.log({ Visits });
     return await _getMBOVisitsData(Visits);
   },
 };

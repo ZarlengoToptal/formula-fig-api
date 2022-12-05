@@ -8,6 +8,7 @@ const _createMBOLocationData = (rawLocations) => {
 
 export default {
   getLocations: async () => {
+    if (process.env.debug) console.log("getLocations");
     if (process.env.MBO_LOCATIONS) {
       return JSON.parse(process.env.MBO_LOCATIONS);
     }
@@ -17,6 +18,7 @@ export default {
     }
     const locations = _createMBOLocationData(Locations);
     process.env.MBO_LOCATIONS = JSON.stringify(locations);
+    if (process.env.debug) console.log({ locations });
     return locations;
   },
 };

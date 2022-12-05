@@ -73,22 +73,28 @@ const verifyMBOClientData = (client) => {
 };
 
 const getMBOClientObject = async (mboId) => {
+  if (process.env.debug) console.log("getMBOClientObject", mboId);
   const { Client, ClientMemberships } = await mboAxios("GET_CLIENT_COMPLETE", {
     ClientId: mboId,
   });
+  if (process.env.debug) console.log({ Client });
   return _getMBOClientData(Client, ClientMemberships);
 };
 const findByEmail = async (email) => {
+  if (process.env.debug) console.log("findByEmail", email);
   const { Clients } = await mboAxios("GET_CLIENTS", {
     SearchText: email,
   });
+  if (process.env.debug) console.log({ Clients });
   return Clients;
 };
 const addClient = async (data) => {
+  if (process.env.debug) console.log("addClient", data);
   const { Client } = await mboAxios(
     "POST_ADD_CLIENT",
     _createMBOClientData(data)
   );
+  if (process.env.debug) console.log({ Client });
   return Client.Id;
 };
 

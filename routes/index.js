@@ -12,11 +12,12 @@ app.use("/auth", auth);
 app.use("/admin", admin);
 app.use("/user", validJWTNeeded, user);
 app.use("/test", async (req, res) => {
+  if (process.env.debug) console.log("GET:/test");
   if (!SHOPIFY.verifyShopifyCustomerData(req.body)) {
     return res.send("Failed Verified").end();
   }
   const response = await SHOPIFY.addCustomer(req.body);
-  console.log({ response });
+  if (process.env.debug) console.log(JSON.stringify(response, null, 2));
   res.json("SUCCESS").end();
 });
 

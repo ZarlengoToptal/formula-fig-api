@@ -6,6 +6,7 @@ const router = Router();
 
 // Get all client info
 router.get("/all", async (req, res) => {
+  if (process.env.debug) console.log("GET:/admin/all");
   const users = await db.collection("user").list();
   const { results } = users;
   if (results?.length === 0) {
@@ -18,20 +19,22 @@ router.get("/all", async (req, res) => {
     const { props } = await db.collection("user").get(key);
     allUsers[key] = props;
   }
+  if (process.env.debug) console.log(JSON.stringify(allUsers, null, 2));
   res.json(allUsers).end();
 });
 
 router.delete("/user/:key", async (req, res) => {
+  if (process.env.debug) console.log("DELETE:/admin/user/:key");
   const { key } = req.params;
   const all = await db.collection("user").list();
-  console.log(all.results);
+  if (process.env.debug) console.log(all.results);
   const response = await db.collection("user").get(key);
   if (!response || response?.results?.length === 0) {
     res.status(400).json({ error: "Key does not exist" });
     return;
   }
   const item = await db.collection("user").delete(key);
-  console.log(JSON.stringify(item, null, 2));
+  if (process.env.debug) console.log(JSON.stringify(item, null, 2));
   res.json(item).end();
 });
 router.post("/createUser", async (req, res) => {
