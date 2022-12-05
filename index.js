@@ -9,7 +9,7 @@ const corsOptions = {
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
-
+process.env.debug = true;
 app.use(cors(corsOptions)); // Use this after the variable declaration
 // CORS (Cross-Origin Resource Sharing) headers to support Cross-site HTTP requests
 app.all("*", (req, res, next) => {
