@@ -1,13 +1,11 @@
-const db = require("cyclic-dynamodb");
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 const jwtSecret = process.env.JWT_SECRET;
 
-exports.validJWTNeeded = (req, res, next) => {
+export function validJWTNeeded(req, res, next) {
   if (req.headers["authorization"]) {
     try {
       let authorization = req.headers["authorization"].split(" ");
       if (authorization[0] !== "Bearer") {
-        e;
         return res.status(401).send();
       } else {
         const { key } = jwt.verify(authorization[1], jwtSecret);
@@ -21,4 +19,4 @@ exports.validJWTNeeded = (req, res, next) => {
   } else {
     return res.status(401).send();
   }
-};
+}

@@ -1,6 +1,6 @@
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt";
 
-const createApiObject = async (client, token, refresh_token) => {
+export const createApiObject = async (client, token, refresh_token) => {
   const salt = await bcrypt.genSalt(10);
   return {
     email: client.email,
@@ -11,14 +11,9 @@ const createApiObject = async (client, token, refresh_token) => {
   };
 };
 
-const verifyApiData = (client) => {
+export const verifyApiData = (client) => {
   if (!client) return false;
   if (!client.email) return false;
   if (!client.password) return false;
   return true;
-};
-
-module.exports = {
-  createApiObject,
-  verifyApiData,
 };

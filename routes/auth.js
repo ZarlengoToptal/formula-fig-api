@@ -1,33 +1,28 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from "express";
+import db from "cyclic-dynamodb";
+import { v4 as uuidv4 } from "uuid";
 
-const db = require("cyclic-dynamodb");
-const { v4: uuidv4 } = require("uuid");
-const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
-
-const {
+import {
   userCheck,
   createToken,
   getClientIpAddr,
   checkPassword,
-} = require("../utils/common");
-const { verifyApiData, createApiObject } = require("../utils/api");
-const { verifyMBOClientData, createMBOClientObject } = require("../utils/mbo");
-const {
-  verifyShopifyClientData,
-  createMultipassToken,
-} = require("../utils/shopify");
+} from "../utils/common.js";
+import { verifyApiData, createApiObject } from "../utils/api.js";
+import MBO from "../api/mbo/index.js";
+import SHOPIFY from "../api/shopify/index.js";
+import { createMultipassToken } from "../utils/shopify.js";
+import { validJWTNeeded } from "../middleware/authentication.js";
 
-const { validJWTNeeded } = require("../middleware/authentication");
-
-const jwtSecret = "mysecret";
+const router = Router();
+const { verifyMBOClientData, addClient, findByEmail } = MBO.Client;
+const { addCustomer, getCustomerByEmail, verifyShopifyCustomerData } = SHOPIFY;
 
 router.post("/register", async (req, res) => {
   // Verify the input data has all the required fields
   if (
     !verifyMBOClientData(req.body) ||
-    !verifyShopifyClientData(req.body) ||
+    !verifyShopifyCustomerData(req.body) ||
     !verifyApiData(req.body)
   ) {
     return res.status(400).send("Invalid data");
@@ -35,12 +30,34 @@ router.post("/register", async (req, res) => {
   // Check if in SSO system
   if (await userCheck(req.body.email, res)) return;
   const key = uuidv4(); // ⇨ '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed'
-  const mboId = await createMBOClientObject(req.body);
+  // Check if exists in MBO
+  const MBOClients = await findByEmail(req.body.email);
+  // Check if exists in Shopify
+  const ShopifyCustomers = await getCustomerByEmail(req.body.email);
+  if (MBOClients.length + ShopifyCustomers.length > 0) {
+    return res
+      .status(403)
+      .send(
+        "Account already exists, please check your email for activation steps."
+      );
+  }
+
+  // Create the new user in MBO
+  const mboId = await addClient(req.body);
   if (!mboId) {
     res.status(400).json({ error: "Error creating MBO client object" });
     return;
   }
   req.body["MBO_-99"] = mboId;
+
+  // Create the new user in Shopify
+  const shopifyId = await addCustomer(req.body);
+  if (!shopifyId) {
+    res.status(400).json({ error: "Error creating Shopify client object" });
+    return;
+  }
+  req.body["Shopify"] = shopifyId;
+
   try {
     const { token, refresh_token } = createToken(key);
     await db
@@ -55,20 +72,6 @@ router.post("/register", async (req, res) => {
     res.status(500).send({ errors: err });
   }
   return;
-});
-
-router.delete("/delete/:key", async (req, res) => {
-  const { key } = req.params;
-  const all = await db.collection("user").list();
-  console.log(all.results);
-  const response = await db.collection("user").get(key);
-  if (!response || response?.results?.length === 0) {
-    res.status(400).json({ error: "Key does not exist" });
-    return;
-  }
-  const item = await db.collection("user").delete(key);
-  console.log(JSON.stringify(item, null, 2));
-  res.json(item).end();
 });
 
 router.post("/logout", validJWTNeeded, async (req, res) => {
@@ -135,4 +138,4 @@ router.get("/shopify-login/:email", async (req, res) => {
   // res.redirect(url);
 });
 
-module.exports = router;
+export default router;
