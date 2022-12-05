@@ -137,6 +137,7 @@ const addCustomer = async (customer) => {
 };
 
 const getShopifyCustomerObject = async (shopifyId) => {
+  console.log("getShopifyCustomerObject", shopifyId);
   const { orders } = await shopifyAxios("GET_CUSTOMER_ORDERS", shopifyId);
   return await _getShopifyOrderData(orders);
 };
