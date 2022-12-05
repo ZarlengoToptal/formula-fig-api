@@ -78,7 +78,10 @@ export const mboAxios = async (URL_TOKEN, data = null) => {
   };
   if (process.env.debug) console.log({ options });
   return axios(options)
-    .then((response) => response.data)
+    .then((response) => {
+      if (process.env.debug) console.log({ response: response.data });
+      return response.data;
+    })
     .catch((error) => {
       console.log(error);
       return null;
