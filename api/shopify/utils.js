@@ -39,6 +39,7 @@ export const shopifyAxios = async (URL_TOKEN, data = null) => {
   }
   const headers = {
     "X-Shopify-Access-Token": process.env.SHOPIFY_ADMIN_API_KEY,
+    "Accept-Encoding": "application/json",
   };
   const options = {
     url,
