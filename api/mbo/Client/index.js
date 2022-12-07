@@ -17,6 +17,34 @@ const _createMBOClientData = (client) => {
   };
 };
 
+const _updateMBOClientData = (client) => {
+  const clientDate = {};
+  if (client.FirstName) clientDate.FirstName = client.FirstName;
+  if (client.LastName) clientDate.LastName = client.LastName;
+  if (client.Email) clientDate.Email = client.Email;
+  if (client.BirthYear)
+    clientDate.BirthDate = `${client.BirthYear}-${client.BirthMonth}-${client.BirthDay}`;
+  if (client.AddressLine1) clientDate.AddressLine1 = client.AddressLine1;
+  if (client.City) clientDate.City = client.City;
+  if (client.State) clientDate.State = client.State;
+  if (client.PostalCode) clientDate.PostalCode = client.PostalCode;
+  if (client.MobilePhone) clientDate.MobilePhone = client.MobilePhone;
+  if (client.Country) clientDate.Country = client.Country;
+  if (client.Location) clientDate.HomeLocation = { Id: client.Location };
+  if (client.SendAccountEmails)
+    clientDate.SendAccountEmails = client.SendAccountEmails;
+  if (client.SendAccountTexts)
+    clientDate.SendAccountTexts = client.SendAccountTexts;
+  if (client.SendPromotionalEmails)
+    clientDate.SendPromotionalEmails = client.SendPromotionalEmails;
+  if (client.SendPromotionalTexts)
+    clientDate.SendPromotionalTexts = client.SendPromotionalTexts;
+  if (client.SendScheduleEmails)
+    clientDate.SendScheduleEmails = client.SendScheduleEmails;
+  if (client.SendScheduleTexts)
+    clientDate.SendScheduleTexts = client.SendScheduleTexts;
+  return clientDate;
+};
 export const _getMBOClientData = (client, memberships) => {
   return {
     FirstName: client.FirstName || "",
@@ -104,7 +132,7 @@ const updateMBOClientObject = async (mboId, data) => {
   await mboAxios("UPDATE_CLIENT", {
     Client: {
       Id: mboId,
-      ...data,
+      ..._updateMBOClientData(data),
     },
     CrossRegionalUpdate: false,
   });
