@@ -47,7 +47,7 @@ router.put("/update", getStoreIds, async (req, res) => {
   console.log({ body: req.body });
   const response = await updateMBOClientObject(req.mboClientId, req.body);
   if (process.env.debug) console.log(JSON.stringify(response, null, 2));
-  res.json(Classes).end();
+  res.json(response).end();
 });
 
 app.use("/", router);
