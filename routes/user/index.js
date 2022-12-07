@@ -44,7 +44,10 @@ router.get("/reschedule/:classId", async (req, res) => {
 // reschedule
 router.put("/update", getStoreIds, async (req, res) => {
   if (process.env.debug) console.log("POST:user/update");
-  const Client = await updateMBOClientObject(req.mboClientId, req.body);
+  const Client = await updateMBOClientObject(
+    req.mboClientId,
+    JSON.parse(req.body)
+  );
   if (process.env.debug) console.log(JSON.stringify(Classes, null, 2));
   res.json(Classes).end();
 });
