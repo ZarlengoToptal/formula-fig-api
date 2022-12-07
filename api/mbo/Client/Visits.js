@@ -22,6 +22,7 @@ const _getMBOVisitsData = async (visits) => {
     History: allVisits.filter(
       (visit) => new Date(visit.StartDate) < new Date()
     ),
+    Locations: locations,
   };
 };
 

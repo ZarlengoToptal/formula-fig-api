@@ -37,6 +37,7 @@ export const _getMBOClientData = (client, memberships) => {
     SendPromotionalTexts: client.SendPromotionalTexts || "",
     SendScheduleEmails: client.SendScheduleEmails || "",
     SendScheduleTexts: client.SendScheduleTexts || "",
+    HomeLocationId: client.HomeLocation?.Id || "",
     ClientCreditCard: {
       CardType: client.ClientCreditCard?.CardType || "",
       ExpMonth: client.ClientCreditCard?.ExpMonth || "",
