@@ -99,8 +99,21 @@ const addClient = async (data) => {
   return Client.Id;
 };
 
+const updateMBOClientObject = async (mboId, data) => {
+  if (process.env.debug) console.log("updateMBOClientObject", mboId);
+  await mboAxios("UPDATE_CLIENT", {
+    Client: {
+      Id: mboId,
+      ...data,
+    },
+    CrossRegionalUpdate: false,
+  });
+  return true;
+};
+
 export default {
   getMBOClientObject,
+  updateMBOClientObject,
   findByEmail,
   addClient,
   verifyMBOClientData,

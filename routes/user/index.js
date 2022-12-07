@@ -4,7 +4,7 @@ import visits from "./visits.js";
 import { getStoreIds } from "../../middleware/getStoreIds.js";
 import MBO from "../../api/mbo/index.js";
 import SHOPIFY from "../../api/shopify/index.js";
-const { getMBOClientObject } = MBO.Client;
+const { getMBOClientObject, updateMBOClientObject } = MBO.Client;
 const { getClassScheduleId, getClassesByScheduleId } = MBO.Class;
 const { getShopifyCustomerObject } = SHOPIFY;
 
@@ -37,6 +37,14 @@ router.get("/reschedule/:classId", async (req, res) => {
   const { classId } = req.params;
   const classScheduleId = await getClassScheduleId(classId);
   const Classes = await getClassesByScheduleId(classScheduleId);
+  if (process.env.debug) console.log(JSON.stringify(Classes, null, 2));
+  res.json(Classes).end();
+});
+
+// reschedule
+router.put("/update", getStoreIds, async (req, res) => {
+  if (process.env.debug) console.log("POST:user/update");
+  const Client = await updateMBOClientObject(req.mboClientId, req.body);
   if (process.env.debug) console.log(JSON.stringify(Classes, null, 2));
   res.json(Classes).end();
 });
