@@ -35,7 +35,7 @@ router.post("/register", async (req, res) => {
   const MBOClients = await findByEmail(req.body.email);
   // Check if exists in Shopify
   const ShopifyCustomers = await getCustomerByEmail(req.body.email);
-  if (MBOClients.length + ShopifyCustomers.length > 0) {
+  if (MBOClients || ShopifyCustomers) {
     return res
       .status(403)
       .send(
