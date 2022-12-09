@@ -15,7 +15,7 @@ const URL_LIST = {
   },
   GET_CUSTOMER_ORDERS: {
     URL: (customerId) =>
-      `/admin/api/2022-10/customers/${customerId}/orders.json`,
+      `/admin/api/2022-10/customers/${customerId}/orders.json?status=any`,
     METHOD: "GET",
   },
   GET_PRODUCTS: {
