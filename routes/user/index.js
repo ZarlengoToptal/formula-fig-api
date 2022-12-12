@@ -18,7 +18,7 @@ const router = express.Router();
 // Get a client info
 router.get("/account", getStoreIds, async (req, res) => {
   if (process.env.debug) console.log("GET:user/account");
-  const mboResponse = await getMBOClientObject(req.mboClientId);
+  const mboResponse = await getMBOClientObject(res.locals.mboClientId);
   if (process.env.debug) console.log(JSON.stringify(mboResponse, null, 2));
   res.json(mboResponse).end();
 });
@@ -26,7 +26,7 @@ router.get("/account", getStoreIds, async (req, res) => {
 // Get a client info
 router.get("/orders", getStoreIds, async (req, res) => {
   if (process.env.debug) console.log("GET:user/orders");
-  const orders = await getShopifyCustomerObject(req.shopifyCustomerId);
+  const orders = await getShopifyCustomerObject(res.locals.shopifyCustomerId);
   if (process.env.debug) console.log(JSON.stringify(orders, null, 2));
   res.json(orders).end();
 });
@@ -50,7 +50,10 @@ router.get("/reschedule/:classId", async (req, res) => {
 router.put("/update", getStoreIds, async (req, res) => {
   if (process.env.debug) console.log("POST:user/update");
   console.log({ body: req.body });
-  const response = await updateMBOClientObject(req.mboClientId, req.body);
+  const response = await updateMBOClientObject(
+    res.locals.mboClientId,
+    req.body
+  );
   if (process.env.debug) console.log(JSON.stringify(response, null, 2));
   res.json(response).end();
 });

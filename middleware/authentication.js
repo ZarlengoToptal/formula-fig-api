@@ -9,7 +9,7 @@ export function validJWTNeeded(req, res, next) {
         return res.status(401).send();
       } else {
         const { key } = jwt.verify(authorization[1], jwtSecret);
-        req.key = key;
+        res.locals.key = key;
         return next();
       }
     } catch (err) {

@@ -26,7 +26,7 @@ router.get("/all", async (req, res) => {
 router.put("/user", async (req, res) => {
   if (process.env.debug) console.log("UPDATE:/admin/user", req.body);
 
-  const { key } = req.body;
+  const { key } = res.locals;
   delete req.body.key;
   const user = await db.collection("user").get(key);
   console.log({ user });

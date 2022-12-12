@@ -78,7 +78,7 @@ router.post("/register", async (req, res) => {
 
 router.post("/logout", validJWTNeeded, async (req, res) => {
   if (process.env.debug) console.log("POST:/auth/logout");
-  const { key } = req;
+  const { key } = res.locals;
   const user = await db.collection("user").get(key);
   if (!user) {
     res.status(201).end();
