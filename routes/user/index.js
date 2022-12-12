@@ -36,8 +36,12 @@ router.get("/reschedule/:classId", async (req, res) => {
   if (process.env.debug) console.log("GET:user/reschedule/:classId");
   const { classId } = req.params;
   const { startDate, endDate } = req.query;
-  const classScheduleId = await getClassScheduleId(classId, startDate, endDate);
-  const Classes = await getClassesByScheduleId(classScheduleId);
+  const classScheduleId = await getClassScheduleId(classId);
+  const Classes = await getClassesByScheduleId(
+    classScheduleId,
+    startDate,
+    endDate
+  );
   if (process.env.debug) console.log(JSON.stringify(Classes, null, 2));
   res.json(Classes).end();
 });

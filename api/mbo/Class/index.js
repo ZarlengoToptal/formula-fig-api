@@ -32,27 +32,22 @@ export default {
       ClassId,
     });
   },
-  getClassScheduleId: async (ClassId, startDate, endDate) => {
+  getClassScheduleId: async (ClassId) => {
     if (process.env.debug) console.log("getClassScheduleId", ClassId);
-    const { Classes } = await mboAxios("GET_CLASSES", {
-      ClassIds: ClassId,
-      StartDateTime: new Date(startDate).toISOString(),
-      EndDateTime: new Date(endDate).toISOString(),
-    });
+    const { Classes } = await mboAxios("GET_CLASSES", { ClassIds: ClassId });
     if (!Classes) {
       return null;
     }
     if (process.env.debug) console.log({ Classes });
     return Classes[0].ClassScheduleId;
   },
-  getClassesByScheduleId: async (classScheduleId) => {
+  getClassesByScheduleId: async (classScheduleId, startDate, endDate) => {
     if (process.env.debug)
       console.log("getClassesByScheduleId", classScheduleId);
-    const endDate = new Date(new Date().getTime() + 21 * 24 * 60 * 60 * 1000);
-
     const { Classes } = await mboAxios("GET_CLASSES", {
       classScheduleIds: classScheduleId,
-      EndDateTime: endDate.toISOString(),
+      StartDateTime: new Date(startDate).toISOString(),
+      EndDateTime: new Date(endDate).toISOString(),
     });
     if (!Classes) {
       return null;
