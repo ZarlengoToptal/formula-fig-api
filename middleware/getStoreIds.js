@@ -8,14 +8,11 @@ export const getStoreIds = async (req, res, next) => {
   }
 
   const user = await User.get(res.locals.key);
-  console.log({ user });
-  const { results } = user;
-  console.log("store", results.length, results);
-  if (results.length === 0) {
+  if (!user) {
     console.log(res.locals.key, "does not have store id");
     return res.status(201).end();
   }
-  const { props } = results[0];
+  const { props } = user;
   res.locals.mboClientId = props["MBO_-99"];
   res.locals.shopifyCustomerId = props["shopifyCustomerId"];
   return next();
