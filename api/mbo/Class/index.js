@@ -34,7 +34,11 @@ export default {
   },
   getClassScheduleId: async (ClassId) => {
     if (process.env.debug) console.log("getClassScheduleId", ClassId);
-    const { Classes } = await mboAxios("GET_CLASSES", { ClassIds: ClassId });
+    const endDate = new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000);
+    const { Classes } = await mboAxios("GET_CLASSES", {
+      ClassIds: ClassId,
+      EndDateTime: endDate.toISOString(),
+    });
     if (!Classes) {
       return null;
     }
