@@ -105,11 +105,12 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const { results } = await db.collection("user").filter({ email });
   console.log({ results });
-  if (results.length === 0) {
+  if (results.length !== 0) {
     res.status(403).end();
     return;
   }
   const { key, props } = results[0];
+  console.log({ key, props });
   if (!key || !props) {
     res.status(403).end();
     return;
