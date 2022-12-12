@@ -18,6 +18,7 @@ const router = express.Router();
 // Get a client info
 router.get("/account", getStoreIds, async (req, res) => {
   if (process.env.debug) console.log("GET:user/account");
+  console.log("locals", res.locals);
   const mboResponse = await getMBOClientObject(res.locals.mboClientId);
   if (process.env.debug) console.log(JSON.stringify(mboResponse, null, 2));
   res.json(mboResponse).end();

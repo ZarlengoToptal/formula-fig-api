@@ -7,7 +7,8 @@ export const getStoreIds = async (req, res, next) => {
     return res.status(201).send();
   }
 
-  const { results } = await User.filter(res.locals.key);
+  const { results } = await User.filter({ key: res.locals.key });
+  console.log("store", results.length);
   if (results.length === 0) {
     console.log(res.locals.key, "does not have store id");
     return res.status(201).end();
