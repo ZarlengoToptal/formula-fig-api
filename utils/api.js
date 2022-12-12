@@ -8,6 +8,7 @@ export const createApiObject = async (client, token, refresh_token) => {
     token,
     refresh_token,
     "MBO_-99": client["MBO_-99"],
+    shopifyCustomerId: client.shopifyCustomerId,
   };
 };
 

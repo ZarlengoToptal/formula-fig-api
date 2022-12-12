@@ -58,7 +58,7 @@ router.post("/register", async (req, res) => {
     res.status(400).json({ error: "Error creating Shopify client object" });
     return;
   }
-  req.body["Shopify"] = shopifyId;
+  req.body["shopifyCustomerId"] = shopifyId;
 
   try {
     const { token, refresh_token } = createToken(key);
